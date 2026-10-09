@@ -1,4 +1,11 @@
 # Changelog
+## [Unreleased]
+
+### Fixed
+
+- Bound how much of a snapshot is read, instead of loading whatever it is given.
+- Reject snapshots from an unsupported schema with a message that names both versions.
+
 
 All notable changes to grovewatch are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
