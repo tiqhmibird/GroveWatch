@@ -30,11 +30,20 @@ func Unmarshal(data []byte) (*Snapshot, error) {
 	return &snap, nil
 }
 
-// Read parses a snapshot from an io.Reader.
+// MaxSnapshotBytes bounds how much of a snapshot stream is read into memory. A
+// snapshot is text about a workspace; anything past this is refused rather than
+// loaded, because a verifier accepts snapshots from other people.
+const MaxSnapshotBytes = 64 << 20
+
+// Read parses a snapshot from an io.Reader, refusing input past MaxSnapshotBytes.
 func Read(r io.Reader) (*Snapshot, error) {
-	data, err := io.ReadAll(r)
+	data, err := io.ReadAll(io.LimitReader(r, MaxSnapshotBytes+1))
 	if err != nil {
 		return nil, fmt.Errorf("read snapshot: %w", err)
+	}
+	if len(data) > MaxSnapshotBytes {
+		return nil, fmt.Errorf(
+			"read snapshot: larger than the %d byte limit - refusing to load it", MaxSnapshotBytes)
 	}
 	return Unmarshal(data)
 }
