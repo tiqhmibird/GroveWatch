@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"sort"
+	"strconv"
 )
 
 // hashBytes returns the hex-encoded SHA-256 of b.
@@ -41,8 +42,13 @@ func merkleRoot(files []FileRecord) string {
 	h := sha256.New()
 	for _, f := range sorted {
 		// Length-prefixed fields prevent ambiguity between adjacent values.
+		// Size and mode are part of the record for a reason: without them here
+		// the tree hash ignores a permission change on an otherwise identical
+		// file, while the snapshot digest does not - two answers for one edit.
 		writeField(h, f.Path)
 		writeField(h, f.Digest)
+		writeField(h, strconv.FormatInt(f.Size, 10))
+		writeField(h, f.Mode)
 	}
 	return hex.EncodeToString(h.Sum(nil))
 }
