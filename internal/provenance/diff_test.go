@@ -13,7 +13,11 @@ func mkSnap(files []FileRecord, tools []ToolRecord, env []EnvRecord) *Snapshot {
 		Environment: env,
 	}
 	s.Workspace.MerkleRoot = merkleRoot(files)
-	s.Digest = ComputeDigest(s)
+	digest, err := ComputeDigest(s)
+	if err != nil {
+		panic(err)
+	}
+	s.Digest = digest
 	return s
 }
 

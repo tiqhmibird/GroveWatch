@@ -88,7 +88,11 @@ func Scan(cfg ScanConfig) (*Snapshot, error) {
 		Environment: env,
 		CreatedAt:   nowFn().UTC(),
 	}
-	snap.Digest = ComputeDigest(snap)
+	digest, err := ComputeDigest(snap)
+	if err != nil {
+		return nil, err
+	}
+	snap.Digest = digest
 	return snap, nil
 }
 

@@ -69,7 +69,7 @@ type canonicalView struct {
 // ComputeDigest returns the canonical SHA-256 identity of a snapshot. It is
 // stable across runs with identical inputs because it excludes CreatedAt and
 // the previously computed Digest.
-func ComputeDigest(snap *Snapshot) string {
+func ComputeDigest(snap *Snapshot) (string, error) {
 	view := canonicalView{
 		Schema:      snap.Schema,
 		Tool:        snap.Tool,
@@ -81,17 +81,19 @@ func ComputeDigest(snap *Snapshot) string {
 	// json.Marshal on a fixed struct with sorted slices is deterministic.
 	data, err := json.Marshal(view)
 	if err != nil {
-		// The view contains only serializable primitives; marshaling cannot
-		// realistically fail. Fall back to an empty digest input rather than
-		// panicking.
-		data = []byte{}
+		// A tamper check must fail closed: hashing an empty buffer here would
+		// give every snapshot in this state the same digest, and any snapshot
+		// carrying that digest would verify.
+		return "", fmt.Errorf("canonical view: %w", err)
 	}
-	return hashBytes(data)
+	return hashBytes(data), nil
 }
 
 // Verify recomputes the digest of snap and reports whether it matches the
 // stored Digest. A false result means the snapshot was tampered with or
-// produced by an incompatible version.
+// produced by an incompatible version; a canonicalisation failure is also a
+// false result, because the check cannot be completed.
 func Verify(snap *Snapshot) bool {
-	return ComputeDigest(snap) == snap.Digest
+	digest, err := ComputeDigest(snap)
+	return err == nil && digest == snap.Digest
 }

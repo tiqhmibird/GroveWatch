@@ -170,7 +170,10 @@ func runVerify(args []string) error {
 		fmt.Printf("OK: digest %s matches content\n", snap.Digest[:12])
 		return nil
 	}
-	recomputed := provenance.ComputeDigest(snap)
+	recomputed, err := provenance.ComputeDigest(snap)
+	if err != nil {
+		return err
+	}
 	fmt.Fprintf(os.Stderr, "MISMATCH: stored %s but content hashes to %s\n", snap.Digest[:12], recomputed[:12])
 	os.Exit(4)
 	return nil
