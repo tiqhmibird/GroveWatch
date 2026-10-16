@@ -162,7 +162,15 @@ func runVerify(args []string) error {
 	if fs.NArg() != 1 {
 		return fmt.Errorf("verify requires <snapshot.json>")
 	}
-	snap, err := loadSnapshot(fs.Arg(0))
+	var (
+		snap *provenance.Snapshot
+		err  error
+	)
+	if fs.Arg(0) == "-" {
+		snap, err = provenance.Read(os.Stdin)
+	} else {
+		snap, err = loadSnapshot(fs.Arg(0))
+	}
 	if err != nil {
 		return err
 	}
