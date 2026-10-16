@@ -12,6 +12,6 @@
     "serve": "node ../scripts/serve.mjs"
   },
   "devDependencies": {
-    "typescript": "^5.8.0"
+    "typescript": "^7.0.2"
   }
 }
